@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domain Trust Analyzer - Analisis Kepercayaan Domain Anda</title>
+    <meta name="description" content="Analisis umur domain, reputasi WHOIS, status blacklist, dan keamanan HTTPS untuk website apa pun secara gratis.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Menggunakan font Inter sebagai default */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style untuk spinner/loading indicator */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header / Navigasi -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-gray-800">Domain<span class="text-blue-600">Trust</span></a>
+            <nav class="hidden md:flex space-x-8">
+                <a href="#" class="text-gray-600 hover:text-blue-600">Home</a>
+                <a href="#" class="text-gray-600 hover:text-blue-600">Tentang</a>
+                <a href="#" class="text-gray-600 hover:text-blue-600">Panduan</a>
+                <a href="#" class="text-gray-600 hover:text-blue-600">Kontak</a>
+            </nav>
+            <button class="md:hidden" id="mobile-menu-button">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
+             <a href="#" class="block py-2 text-gray-600 hover:text-blue-600">Home</a>
+             <a href="#" class="block py-2 text-gray-600 hover:text-blue-600">Tentang</a>
+             <a href="#" class="block py-2 text-gray-600 hover:text-blue-600">Panduan</a>
+             <a href="#" class="block py-2 text-gray-600 hover:text-blue-600">Kontak</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-12 md:py-20">
+        
+        <!-- Hero Section -->
+        <section class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Periksa Kepercayaan Sebuah Website</h1>
+            <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">Masukkan nama domain untuk mendapatkan analisis mendalam tentang reputasi dan keamanannya.</p>
+            
+            <form id="analysis-form" class="mt-8 max-w-xl mx-auto flex flex-col sm:flex-row gap-3">
+                <input type="text" id="domain-input" placeholder="contoh: google.com" class="flex-grow w-full px-4 py-3 text-lg bg-white border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out" required>
+                <button type="submit" class="bg-blue-600 text-white font-semibold px-8 py-3 text-lg rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                    Analisis Sekarang
+                </button>
+            </form>
+            <div id="error-message" class="text-red-500 mt-2 h-5"></div>
+        </section>
+
+        <!-- Results Section (Initially Hidden) -->
+        <section id="results-section" class="mt-16 hidden">
+            
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="text-center">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto"></div>
+                <p class="mt-4 text-gray-600">Menganalisis domain, mohon tunggu...</p>
+            </div>
+
+            <!-- Analysis Results -->
+            <div id="analysis-results" class="hidden">
+                <h2 class="text-3xl font-bold text-center mb-8">Hasil Analisis untuk: <span id="result-domain" class="text-blue-600"></span></h2>
+                
+                <!-- Score Summary -->
+                <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-gray-500">Skor Kepercayaan</h3>
+                        <p id="score-value" class="text-5xl font-bold mt-2"></p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-gray-500">Peringkat</h3>
+                        <div id="score-badge" class="mt-3 inline-block px-6 py-2 text-xl font-bold text-white rounded-full"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-gray-500">Umur Domain</h3>
+                        <p id="domain-age" class="text-5xl font-bold mt-2"></p>
+                    </div>
+                </div>
+
+                <!-- Detailed Analysis -->
+                <div class="mt-12 max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+                    <h3 class="text-2xl font-bold mb-6">Detail Analisis</h3>
+                    <div class="space-y-6">
+                        <!-- WHOIS Info -->
+                        <div class="flex items-start">
+                            <div id="whois-icon" class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4"></div>
+                            <div>
+                                <h4 class="font-semibold text-lg">Informasi WHOIS</h4>
+                                <p id="whois-status" class="text-gray-600"></p>
+                            </div>
+                        </div>
+                        <!-- HTTPS/SSL -->
+                        <div class="flex items-start">
+                            <div id="https-icon" class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4"></div>
+                            <div>
+                                <h4 class="font-semibold text-lg">Koneksi Aman (HTTPS)</h4>
+                                <p id="https-status" class="text-gray-600"></p>
+                            </div>
+                        </div>
+                        <!-- Blacklist Status -->
+                        <div class="flex items-start">
+                            <div id="blacklist-icon" class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4"></div>
+                            <div>
+                                <h4 class="font-semibold text-lg">Status Blacklist</h4>
+                                <p id="blacklist-status" class="text-gray-600"></p>
+                            </div>
+                        </div>
+                        <!-- Server Location -->
+                        <div class="flex items-start">
+                            <div id="server-icon" class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4"></div>
+                            <div>
+                                <h4 class="font-semibold text-lg">Lokasi Server</h4>
+                                <p id="server-status" class="text-gray-600"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white mt-20 border-t">
+        <div class="container mx-auto px-6 py-8 text-center text-gray-600">
+            <p>&copy; 2025 DomainTrust. Seluruh hak cipta dilindungi.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Mobile Menu Toggle ---
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // --- Form Submission and Analysis Logic ---
+        const analysisForm = document.getElementById('analysis-form');
+        const domainInput = document.getElementById('domain-input');
+        const errorMessage = document.getElementById('error-message');
+        const resultsSection = document.getElementById('results-section');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const analysisResults = document.getElementById('analysis-results');
+
+        analysisForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent page reload
+            const domain = domainInput.value.trim();
+
+            if (!domain) {
+                errorMessage.textContent = 'Nama domain tidak boleh kosong.';
+                return;
+            }
+            errorMessage.textContent = '';
+
+            // Show loading indicator and hide previous results
+            resultsSection.classList.remove('hidden');
+            loadingIndicator.classList.remove('hidden');
+            analysisResults.classList.add('hidden');
+            
+            // Scroll to results section for better UX on mobile
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+
+            // --- REAL ANALYSIS ---
+            // Call our own backend server now.
+            try {
+                const response = await fetch(`http://localhost:3000/api/analyze?domain=${domain}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Handle errors from our backend (e.g., domain not found)
+                    throw new Error(data.error || 'Terjadi kesalahan');
+                }
+
+                // Hide loading and show results
+                loadingIndicator.classList.add('hidden');
+                renderResults(data);
+                analysisResults.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Error fetching analysis:", error);
+                errorMessage.textContent = error.message;
+                loadingIndicator.classList.add('hidden');
+            }
+        });
+
+        /**
+         * Renders the analysis results into the DOM.
+         * @param {object} data - The analysis data object from our backend.
+         */
+        function renderResults(data) {
+            // Helper function to create status icons
+            const createIcon = (isGood) => {
+                const color = isGood ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+                const svg = isGood ? 
+                    `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>` :
+                    `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+                return `<div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 ${color}">${svg}</div>`;
+            };
+
+            // Populate summary
+            document.getElementById('result-domain').textContent = data.domain;
+            document.getElementById('score-value').textContent = data.score;
+            const badgeElement = document.getElementById('score-badge');
+            badgeElement.textContent = data.badge.text;
+            badgeElement.className = `mt-3 inline-block px-6 py-2 text-xl font-bold text-white rounded-full ${data.badge.color}`;
+            document.getElementById('domain-age').textContent = data.domainAge.split(' ')[0]; // Show only years for big display
+
+            // Populate details
+            document.getElementById('whois-icon').innerHTML = createIcon(!data.whois.isPrivate);
+            document.getElementById('whois-status').textContent = data.whois.text;
+            
+            document.getElementById('https-icon').innerHTML = createIcon(data.https.hasHttps);
+            document.getElementById('https-status').textContent = data.https.text;
+
+            document.getElementById('blacklist-icon').innerHTML = createIcon(!data.blacklist.isListed);
+            document.getElementById('blacklist-status').textContent = data.blacklist.text;
+
+            document.getElementById('server-icon').innerHTML = createIcon(true); // Server location is neutral info
+            document.getElementById('server-status').textContent = `${data.server.location} - IP: ${data.server.ip}`;
+        }
+
+    </script>
+</body>
+</html>
